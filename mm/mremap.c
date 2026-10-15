@@ -320,10 +320,11 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 }
 
 static unsigned long move_vma(struct vm_area_struct *vma,
-		unsigned long old_addr, unsigned long old_len,
-		unsigned long new_len, unsigned long new_addr,
-		bool *locked, struct vm_userfaultfd_ctx *uf,
-		struct list_head *uf_unmap)
+                unsigned long old_addr, unsigned long old_len,
+                unsigned long new_len, unsigned long new_addr,
+                unsigned long flags, bool *locked,
+                struct vm_userfaultfd_ctx *uf,
+                struct list_head *uf_unmap)
 {
 	struct mm_struct *mm = vma->vm_mm;
 	struct vm_area_struct *new_vma;
@@ -513,10 +514,11 @@ static struct vm_area_struct *vma_to_resize(unsigned long addr,
 }
 
 static unsigned long mremap_to(unsigned long addr, unsigned long old_len,
-		unsigned long new_addr, unsigned long new_len, bool *locked,
-		struct vm_userfaultfd_ctx *uf,
-		struct list_head *uf_unmap_early,
-		struct list_head *uf_unmap)
+                unsigned long new_addr, unsigned long new_len,
+                unsigned long flags, bool *locked,
+                struct vm_userfaultfd_ctx *uf,
+                struct list_head *uf_unmap_early,
+                struct list_head *uf_unmap)
 {
 	struct mm_struct *mm = current->mm;
 	struct vm_area_struct *vma;
@@ -561,8 +563,8 @@ static unsigned long mremap_to(unsigned long addr, unsigned long old_len,
 	if (offset_in_page(ret))
 		goto out1;
 
-	ret = move_vma(vma, addr, old_len, new_len, new_addr, locked, uf,
-		       uf_unmap);
+        ret = move_vma(vma, addr, old_len, new_len, new_addr, flags,
+               locked, uf, uf_unmap);
 	if (!(offset_in_page(ret)))
 		goto out;
 out1:
@@ -631,8 +633,8 @@ SYSCALL_DEFINE5(mremap, unsigned long, addr, unsigned long, old_len,
 		return -EINTR;
 
 	if (flags & MREMAP_FIXED) {
-		ret = mremap_to(addr, old_len, new_addr, new_len,
-				&locked, &uf, &uf_unmap_early, &uf_unmap);
+		ret = mremap_to(addr, old_len, new_addr, new_len, flags,
+		                &locked, &uf, &uf_unmap_early, &uf_unmap);
 		goto out;
 	}
 
@@ -701,8 +703,8 @@ SYSCALL_DEFINE5(mremap, unsigned long, addr, unsigned long, old_len,
 			goto out;
 		}
 
-		ret = move_vma(vma, addr, old_len, new_len, new_addr,
-			       &locked, &uf, &uf_unmap);
+		ret = move_vma(vma, addr, old_len, new_len, new_addr, flags,
+		               &locked, &uf, &uf_unmap);
 	}
 out:
 	if (offset_in_page(ret)) {

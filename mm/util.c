@@ -4,6 +4,7 @@
 #include <linux/compiler.h>
 #include <linux/export.h>
 #include <linux/err.h>
+#include <linux/random.h>
 #include <linux/sched.h>
 #include <linux/sched/mm.h>
 #include <linux/sched/task_stack.h>
