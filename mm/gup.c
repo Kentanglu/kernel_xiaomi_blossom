@@ -452,6 +452,14 @@ struct page *follow_page_mask(struct vm_area_struct *vma,
 	return follow_p4d_mask(vma, address, pgd, flags, page_mask);
 }
 
+struct page *follow_page(struct vm_area_struct *vma, unsigned long address,
+                         unsigned int foll_flags)
+{
+        unsigned int page_mask = 0;
+
+        return follow_page_mask(vma, address, foll_flags, &page_mask);
+}
+
 static int get_gate_page(struct mm_struct *mm, unsigned long address,
 		unsigned int gup_flags, struct vm_area_struct **vma,
 		struct page **page)
